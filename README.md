@@ -1,35 +1,55 @@
 # kabu-dash
 
+## 構成
+
+```
+.
+├── compose.yml
+├── docker/
+│   ├── nginx/        # Nginx
+│   ├── php/          # PHP-FPM
+│   └── postgresql/   # PostgreSQL
+└── src/              # Laravelアプリケーション
+```
+
 ## 起動手順
 
-### 1. 依存パッケージのインストール
+### 1. 環境設定
 
 ```bash
-composer install
-npm install
+cp src/.env.example src/.env
 ```
 
-### 2. 環境設定
+### 2. Dockerビルド & 起動
 
 ```bash
-cp .env.example .env
-php artisan key:generate
+docker compose up -d --build
 ```
 
-### 3. データベースのマイグレーション
+### 3. 初期セットアップ
 
 ```bash
-php artisan migrate
+# Composerパッケージインストール
+docker compose exec php composer install
+
+# アプリケーションキー生成
+docker compose exec php php artisan key:generate
+
+# マイグレーション実行
+docker compose exec php php artisan migrate
 ```
 
-### 4. アプリケーションの起動
+アプリケーションは http://localhost で起動します。
+
+## よく使うコマンド
 
 ```bash
-# 開発サーバー起動
-php artisan serve
+# コンテナ停止
+docker compose down
 
-# フロントエンドのビルド（開発用ウォッチモード）
-npm run dev
+# ログ確認
+docker compose logs -f
+
+# phpコンテナに入る
+docker compose exec php sh
 ```
-
-アプリケーションは http://localhost:8000 で起動します。
