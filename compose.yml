@@ -1,0 +1,30 @@
+services:
+  nginx:
+    build:
+      context: ./docker/nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - app
+
+  app:
+    build:
+      context: ./docker/php
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - postgresql
+
+  postgresql:
+    build:
+      context: ./docker/postgresql
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-kabu_dash}
+      POSTGRES_USER: ${DB_USERNAME:-kabu_dash}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+    volumes:
+      - ./docker/postgresql/data/pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
