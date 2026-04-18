@@ -7,9 +7,9 @@ services:
     volumes:
       - ./src:/var/www/html
     depends_on:
-      - php
+      - app
 
-  php:
+  app:
     build:
       context: ./docker/php
     volumes:
