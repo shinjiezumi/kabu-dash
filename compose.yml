@@ -25,6 +25,6 @@ services:
       POSTGRES_USER: ${DB_USERNAME:-kabu_dash}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
     volumes:
-      - ./docker/postgresql/data:/var/lib/postgresql/data
+      - ./docker/postgresql/data/pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
