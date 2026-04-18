@@ -23,8 +23,23 @@
 │   └── postgresql/          # PostgreSQL Dockerfile + data/pgdata/
 └── src/                     # Laravelアプリケーション
     ├── app/
+    │   ├── Domain/          # ドメイン層（DDDコア）
+    │   │   └── {Context}/
+    │   │       ├── Entity/
+    │   │       ├── ValueObject/
+    │   │       ├── Aggregate/
+    │   │       ├── Repository/   # インターフェース
+    │   │       ├── Service/
+    │   │       └── Event/
+    │   ├── Application/     # アプリケーション層
+    │   │   └── {Context}/
+    │   │       └── UseCase/
+    │   ├── Infrastructure/  # インフラ層
+    │   │   └── {Context}/
+    │   │       └── Persistence/
     │   ├── Http/Controllers/
-    │   └── Models/
+    │   ├── Models/          # Eloquentモデル（インフラ層で使用）
+    │   └── Providers/
     ├── config/
     ├── database/
     │   ├── factories/
@@ -38,6 +53,7 @@
     └── tests/
         ├── Feature/
         └── Unit/
+            └── Domain/      # ドメインオブジェクトのユニットテスト
 ```
 
 ## よく使うコマンド
@@ -96,6 +112,26 @@ PR 作成・プッシュ時に自動実行:
 | lint | Laravel Pint | コーディング規約チェック |
 | security | composer audit / npm audit | 依存パッケージの脆弱性スキャン |
 | test | PHPUnit | 自動テスト |
+
+## アーキテクチャ方針（DDD）
+
+このプロジェクトは DDD（ドメイン駆動設計）を採用しています。
+
+### レイヤー責務
+
+| レイヤー | 場所 | 責務 |
+|---------|------|------|
+| Domain | `app/Domain/` | ビジネスロジックの核心。フレームワーク非依存 |
+| Application | `app/Application/` | ユースケース。Domain層を orchestrate する |
+| Infrastructure | `app/Infrastructure/` | DB・外部API等の技術的実装 |
+| Interface | `app/Http/` | HTTP リクエスト/レスポンスの処理 |
+
+### 基本ルール
+
+- Domain 層に Laravel / Eloquent を持ち込まない
+- 集約をまたぐ参照は ID のみで行う
+- リポジトリは Domain 層でインターフェース定義、Infrastructure 層で実装
+- `AppServiceProvider` でインターフェースと実装をバインドする
 
 ## 環境変数
 
