@@ -7,7 +7,7 @@
 ├── compose.yml
 ├── docker/
 │   ├── nginx/        # Nginx
-│   ├── php/          # PHP-FPM
+│   ├── app/          # PHP-FPM
 │   └── postgresql/   # PostgreSQL
 └── src/              # Laravelアプリケーション
 ```
@@ -30,13 +30,13 @@ docker compose up -d --build
 
 ```bash
 # Composerパッケージインストール
-docker compose exec php composer install
+docker compose exec app composer install
 
 # アプリケーションキー生成
-docker compose exec php php artisan key:generate
+docker compose exec app php artisan key:generate
 
 # マイグレーション実行
-docker compose exec php php artisan migrate
+docker compose exec app php artisan migrate
 ```
 
 アプリケーションは http://localhost で起動します。
