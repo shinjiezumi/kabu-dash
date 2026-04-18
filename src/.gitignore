@@ -5,8 +5,8 @@
 .env.production
 .phpactor.json
 .phpunit.result.cache
+.vite
 /.cursor/
-/.idea
 /.nova
 /.phpunit.cache
 /.vscode
