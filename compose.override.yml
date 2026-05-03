@@ -1,0 +1,11 @@
+services:
+  nginx:
+    build:
+      context: ./docker/nginx
+      args:
+        NGINX_CONF: nginx.local.conf
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/certs:/etc/nginx/certs
+    environment:
+      - NGINX_SERVER_NAME=localhost

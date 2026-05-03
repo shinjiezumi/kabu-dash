@@ -1,2 +1,5 @@
 .DS_Store
 .idea/
+docker/certs/
+docker/certbot/conf/
+docker/certbot/www/

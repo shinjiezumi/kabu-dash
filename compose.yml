@@ -4,8 +4,11 @@ services:
       context: ./docker/nginx
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./src:/var/www/html
+      - ./docker/certbot/www:/var/www/certbot
+      - ./docker/certbot/conf:/etc/letsencrypt
     environment:
       - NGINX_SERVER_NAME=${NGINX_SERVER_NAME:-localhost}
     depends_on:
@@ -30,3 +33,11 @@ services:
       - ./docker/postgresql/data/pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./docker/certbot/www:/var/www/certbot
+      - ./docker/certbot/conf:/etc/letsencrypt
+    profiles:
+      - certbot

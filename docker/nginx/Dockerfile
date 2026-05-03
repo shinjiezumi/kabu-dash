@@ -1,3 +1,4 @@
 FROM nginx:alpine
 
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+ARG NGINX_CONF=nginx.conf
+COPY ${NGINX_CONF} /etc/nginx/templates/default.conf.template
