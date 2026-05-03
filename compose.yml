@@ -6,6 +6,8 @@ services:
       - "80:80"
     volumes:
       - ./src:/var/www/html
+    environment:
+      - NGINX_SERVER_NAME=${NGINX_SERVER_NAME:-localhost}
     depends_on:
       - app
 
