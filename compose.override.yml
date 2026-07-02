@@ -8,4 +8,4 @@ services:
       - ./src:/var/www/html
       - ./docker/certs:/etc/nginx/certs
     environment:
-      - NGINX_SERVER_NAME=localhost
+      - NGINX_SERVER_NAME=kabu-dash.local.shinjiezumi.com
