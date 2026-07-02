@@ -7,10 +7,12 @@ services:
       - "443:443"
     volumes:
       - ./src:/var/www/html
-      - ./docker/certbot/www:/var/www/certbot
-      - ./docker/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+      - ./data/certbot/conf:/etc/letsencrypt
     environment:
       - NGINX_SERVER_NAME=${NGINX_SERVER_NAME:-localhost}
+      - SSL_CERT_PATH=/etc/letsencrypt/live/${NGINX_SERVER_NAME:-localhost}/fullchain.pem
+      - SSL_CERT_KEY_PATH=/etc/letsencrypt/live/${NGINX_SERVER_NAME:-localhost}/privkey.pem
     depends_on:
       - app
 
@@ -30,14 +32,15 @@ services:
       POSTGRES_USER: ${DB_USERNAME:-kabu_dash}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
     volumes:
-      - ./docker/postgresql/data/pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - pgdata:/var/lib/postgresql/data
 
   certbot:
     image: certbot/certbot
     volumes:
-      - ./docker/certbot/www:/var/www/certbot
-      - ./docker/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+      - ./data/certbot/conf:/etc/letsencrypt
     profiles:
       - certbot
+
+volumes:
+  pgdata:

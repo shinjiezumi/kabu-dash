@@ -4,8 +4,8 @@ import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 // mkcertで生成したローカル証明書（存在しない環境ではHTTPで起動）
-const certPath = '../docker/certs/cert.pem';
-const keyPath = '../docker/certs/key.pem';
+const certPath = '../data/certs/cert.pem';
+const keyPath = '../data/certs/key.pem';
 const useHttps = fs.existsSync(certPath) && fs.existsSync(keyPath);
 
 export default defineConfig({

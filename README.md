@@ -4,20 +4,30 @@
 
 ```
 .
-├── compose.yml
-├── docker/
-│   ├── nginx/        # Nginx
-│   ├── app/          # PHP-FPM
-│   └── postgresql/   # PostgreSQL
-└── src/              # Laravelアプリケーション
+├── compose.yml            # 基本構成（本番はこのファイルのみ使用）
+├── compose.override.yml   # ローカル専用の上書き（docker compose up で自動適用）
+├── .env.example           # インフラ用環境変数の雛形（NGINX_SERVER_NAME, DB_*）
+├── docker/                # コンテナイメージのビルド定義
+│   ├── nginx/             # Nginx
+│   ├── php/               # PHP-FPM
+│   └── postgresql/        # PostgreSQL
+├── data/                  # ランタイムデータ（gitignore）
+│   ├── certs/             # ローカル用SSL証明書（mkcert）
+│   └── certbot/           # 本番用SSL証明書（Let's Encrypt）
+└── src/                   # Laravelアプリケーション
 ```
+
+- ローカル起動: `docker compose up -d`（compose.override.yml が自動でマージされる）
+- 本番起動: `docker compose -f compose.yml up -d`（override を無視する）
+- DBデータは named volume（`pgdata`）で管理され、リポジトリ内には置かない
 
 ## 起動手順
 
 ### 1. 環境設定
 
 ```bash
-cp src/.env.example src/.env
+cp .env.example .env            # インフラ用（docker composeが読む）
+cp src/.env.example src/.env    # アプリ用（Laravelが読む）
 ```
 
 ### 2. ローカルHTTPS設定
@@ -29,8 +39,9 @@ mkcert でローカル用のSSL証明書を生成する。
 brew install mkcert
 mkcert -install
 
-# 証明書生成（docker/certs/ はgitignore済み）
-mkcert -cert-file docker/certs/cert.pem -key-file docker/certs/key.pem \
+# 証明書生成（data/ はgitignore済み）
+mkdir -p data/certs
+mkcert -cert-file data/certs/cert.pem -key-file data/certs/key.pem \
   kabu-dash.local.shinjiezumi.com localhost 127.0.0.1
 ```
 
@@ -46,10 +57,10 @@ echo "127.0.0.1 kabu-dash.local.shinjiezumi.com" | sudo tee -a /etc/hosts
 
 ```bash
 # 有効期限の確認
-openssl x509 -in docker/certs/cert.pem -noout -dates
+openssl x509 -in data/certs/cert.pem -noout -dates
 
 # 再生成（生成コマンドと同じ。既存ファイルは上書きされる）
-mkcert -cert-file docker/certs/cert.pem -key-file docker/certs/key.pem \
+mkcert -cert-file data/certs/cert.pem -key-file data/certs/key.pem \
   kabu-dash.local.shinjiezumi.com localhost 127.0.0.1
 
 # 証明書はマウントされているため、nginxの再起動のみで反映される

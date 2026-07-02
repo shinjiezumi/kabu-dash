@@ -16,11 +16,14 @@
 
 ```
 .
-├── compose.yml
-├── docker/
-│   ├── nginx/               # Nginx設定
+├── compose.yml              # 基本構成（本番はこのファイルのみ使用）
+├── compose.override.yml     # ローカル専用の上書き（自動適用）
+├── .env.example             # インフラ用環境変数の雛形（ルート.envはgitignore）
+├── docker/                  # コンテナイメージのビルド定義
+│   ├── nginx/               # Nginx設定（default.conf.template）
 │   ├── php/                 # PHP-FPM Dockerfile (appサービス)
-│   └── postgresql/          # PostgreSQL Dockerfile + data/pgdata/
+│   └── postgresql/          # PostgreSQL Dockerfile（データはnamed volume）
+├── data/                    # ランタイムデータ（gitignore: SSL証明書等）
 └── src/                     # Laravelアプリケーション
     ├── app/
     │   ├── Domain/          # ドメイン層（DDDコア）
