@@ -1,328 +1,113 @@
 # Claude Code ワークフローガイド
 
-このドキュメントでは、kabu-dash の開発で Claude Code を活用するためのワークフロー・コマンド・エージェントの使い方をまとめています。
-
----
-
-## 目次
-
-1. [概要](#概要)
-2. [スラッシュコマンド一覧](#スラッシュコマンド一覧)
-3. [エージェント一覧](#エージェント一覧)
-4. [開発ワークフロー](#開発ワークフロー)
-   - [通常の機能開発](#通常の機能開発)
-   - [DDD を用いた機能開発](#ddd-を用いた機能開発)
-   - [PRレビュー](#prレビュー)
-
----
-
-## 概要
-
-Claude Code には以下の仕組みがあります。
-
-| 仕組み | 場所 | 説明 |
-|--------|------|------|
-| **CLAUDE.md** | プロジェクトルート | プロジェクト情報・規約を Claude に提供するドキュメント。会話開始時に自動読み込みされる |
-| **スラッシュコマンド** | `.claude/commands/` | `/コマンド名` で呼び出せるショートカット。繰り返し使う操作を定型化 |
-| **エージェント** | `.claude/agents/` | 特定の専門知識を持つサブエージェント。コマンドや Claude から呼び出される |
+kabu-dash の開発で Claude Code を活用するためのワークフロー・コマンド・エージェントの一覧。
+各コマンド・エージェントの詳細な動作は `.claude/commands/` `.claude/agents/` の各ファイルが正。
+アーキテクチャ・テスト方針は [architecture.md](./architecture.md) を参照。
 
 ---
 
 ## スラッシュコマンド一覧
 
-### `/review [ファイルパス]`
-
-現在の変更差分をコードレビューします。
-
-```
-/review                          # git diff の全差分をレビュー
-/review src/app/Models/Stock.php # 特定ファイルをレビュー
-```
-
-**動作:**
-1. 引数ありの場合 → 指定ファイルをレビュー
-2. 引数なしの場合 → `git diff HEAD` の差分をレビュー
-3. 差分がない場合 → `git diff origin/master...HEAD` でブランチ全体をレビュー
-
-`reviewer` エージェントがセキュリティ・バグ・規約・パフォーマンスの観点で指摘します。
-
----
-
-### `/review-pr <PR番号>`
-
-指定した GitHub PR のコードレビューを行います。
-
-```
-/review-pr 42
-```
-
-**動作:**
-1. `gh pr view` で PR の概要（タイトル・説明・ベースブランチ）を取得
-2. `gh pr diff` で変更差分を取得
-3. `reviewer` エージェントが PR の背景を踏まえてレビュー
-
----
-
-### `/test [テスト名]`
-
-PHPUnit テストを実行します。
-
-```
-/test                   # 全テスト実行
-/test StockTest         # 特定テストクラスのみ実行
-/test testCalculatePrice # 特定メソッドのみ実行
-```
-
-**動作:**
-- 引数なし → `php artisan test`（全テスト）
-- 引数あり → `php artisan test --filter={引数}`
-- 失敗時は原因と修正案を提示
-
----
-
-### `/lint [--fix]`
-
-Laravel Pint でコーディング規約をチェックします。
-
-```
-/lint          # チェックのみ（ファイルは変更しない）
-/lint --fix    # 自動修正
-```
-
-**動作:**
-- `--fix` なし → `pint --test`（チェックのみ）
-- `--fix` あり → `pint`（自動修正）
-- 違反があればファイル名・問題箇所を説明
-
----
-
-### `/ddd-model <機能・要件>`
-
-ビジネス要件から DDD ドメインモデルを設計します。
-
-```
-/ddd-model 銘柄管理機能
-/ddd-model ユーザーがポートフォリオに銘柄を追加・削除できる
-```
-
-**動作:**
-1. 既存コードを読みドメインの現状を把握
-2. `ddd-modeler` エージェントが以下を設計して出力:
-   - ユビキタス言語（用語集）
-   - 境界付けられたコンテキスト
-   - 集約・エンティティ・値オブジェクト
-   - ドメインイベント
-   - リポジトリインターフェース
-   - コンテキストマップ
-
----
-
-### `/ddd-implement <モデル名・集約名>`
-
-設計済みの DDD モデルを Laravel PHP コードとして実装します。
-
-```
-/ddd-implement Stock集約
-/ddd-implement Portfolioコンテキスト
-```
-
-**動作:**
-1. 既存コードを確認
-2. `ddd-implementer` エージェントが以下を生成:
-   - Domain 層: Entity・ValueObject・Repository インターフェース・DomainService・DomainEvent
-   - Application 層: UseCase・入力 DTO
-   - Infrastructure 層: Eloquent リポジトリ実装
-   - `AppServiceProvider` へのバインド登録
-3. マイグレーションファイルを生成
-4. `tests/Unit/Domain/` にユニットテストを生成
-
----
+| コマンド | 用途 | 例 |
+|---------|------|-----|
+| `/plan-feature <要件>` | 実装計画を作成し `docs/plans/` に保存（コードは変更しない） | `/plan-feature 銘柄をポートフォリオに追加できる` |
+| `/implement-feature <計画書パス>` | 計画に基づき実装+テスト。カバレッジ100%まで完了しない | `/implement-feature docs/plans/2026-07-02-add-stock.md` |
+| `/investigate <機能名>` | 既存機能を調査し Mermaid 図付きレポートを `docs/investigations/` に保存 | `/investigate 銘柄一覧画面` |
+| `/refactor <対象>` | テストを安全網に振る舞いを変えないリファクタリング | `/refactor src/app/Http/Controllers/StockController.php` |
+| `/ddd-model <要件>` | DDD ドメインモデルを設計 | `/ddd-model ポートフォリオ管理機能` |
+| `/ddd-implement <集約名>` | DDD モデルをコード+テストとして実装 | `/ddd-implement Stock集約` |
+| `/review [対象]` | 変更差分 or 指定ファイルをレビュー | `/review` |
+| `/review-pr <PR番号>` | GitHub PR をレビュー | `/review-pr 42` |
+| `/create-pr [タイトル]` | 品質ゲート確認後にコミット・push し GitHub PR を作成 | `/create-pr ローカル環境のHTTPS化` |
+| `/test [フィルタ\|--coverage]` | テスト実行。`--coverage` でカバレッジ計測（100%必須） | `/test --coverage` |
+| `/lint [--fix]` | Pint で規約チェック。`--fix` で自動修正 | `/lint --fix` |
 
 ## エージェント一覧
 
-エージェントはスラッシュコマンドから自動的に呼び出されますが、Claude との会話の中で直接呼び出すこともできます。
-
-### `reviewer`
-
-**役割:** Laravel コードのレビュー専門エージェント
-
-**レビュー観点:**
-
-| 優先度 | 分類 | 内容 |
-|--------|------|------|
-| 🔴 Critical | セキュリティ | SQL インジェクション・XSS・CSRF・認証/認可漏れ・機密情報ハードコーディング |
-| 🔴 Critical | バグ | 論理エラー・NULL 安全性・例外処理漏れ・トランザクション管理誤り |
-| 🟡 Warning | パフォーマンス | N+1 問題・不要クエリ・インデックス不足 |
-| 🟡 Warning | 保守性 | Fat Controller・重複コード・テスタビリティ |
-| 🔵 Info | 規約 | PSR-12 準拠・命名規則・型ヒント |
-
-**呼び出し方:**
-```
-/review
-/review-pr 42
-```
-
----
-
-### `ddd-modeler`
-
-**役割:** DDD ドメインモデルの設計専門エージェント
-
-**設計できるもの:**
-- ユビキタス言語（日本語↔英語の用語対応表）
-- 境界付けられたコンテキストと責務
-- 集約・集約ルート・不変条件
-- エンティティとその識別子
-- 値オブジェクトとバリデーション制約
-- ドメインサービス
-- ドメインイベント
-- リポジトリインターフェース
-- コンテキストマップ（コンテキスト間の関係）
-
-**呼び出し方:**
-```
-/ddd-model {機能名・要件}
-```
-
----
-
-### `ddd-implementer`
-
-**役割:** DDD モデルを Laravel PHP コードに変換する実装専門エージェント
-
-**生成できるもの:**
-
-```
-src/app/
-├── Domain/{BoundedContext}/
-│   ├── Entity/           # エンティティ（識別子を持つオブジェクト）
-│   ├── ValueObject/      # 値オブジェクト（不変・値で同一性判断）
-│   ├── Aggregate/        # 集約ルート
-│   ├── Repository/       # リポジトリインターフェース（抽象）
-│   ├── Service/          # ドメインサービス
-│   └── Event/            # ドメインイベント
-├── Application/{BoundedContext}/
-│   └── UseCase/          # ユースケース + 入力 DTO
-└── Infrastructure/{BoundedContext}/
-    └── Persistence/      # Eloquent リポジトリ実装
-```
-
-**実装方針:**
-- `declare(strict_types=1)` 必須
-- `final` クラスを基本とする
-- `readonly` で不変性を表現
-- Domain 層はフレームワーク非依存（Laravel/Eloquent を持ち込まない）
-- 集約をまたぐ参照は ID のみ
-
-**呼び出し方:**
-```
-/ddd-implement {モデル名・集約名}
-```
-
----
+| エージェント | 役割 | 主な呼び出し元 |
+|-------------|------|--------------|
+| `code-explorer` | 既存コード調査（読み取り専用・Mermaid図付き定型レポート） | `/investigate` `/plan-feature` |
+| `ddd-modeler` | ドメインモデル設計（ユビキタス言語・集約・値オブジェクト） | `/ddd-model` `/plan-feature` |
+| `ddd-implementer` | DDD モデルの実装（コード+テスト生成） | `/ddd-implement` `/implement-feature` |
+| `test-writer` | テスト作成・カバレッジ100%達成の専門家 | `/implement-feature` `/refactor` |
+| `reviewer` | コードレビュー（セキュリティ・バグ・テスト・規約・性能） | `/review` `/review-pr` |
 
 ## 開発ワークフロー
 
-### 通常の機能開発
+### 機能追加（計画→実装→レビュー）
 
-```
-1. 実装
-   └─ Claude に「〇〇機能を実装して」と依頼
-
-2. 品質チェック
-   ├─ /lint --fix   # コーディング規約を自動修正
-   └─ /test         # テストを実行
-
-3. レビュー
-   └─ /review       # 変更差分をレビュー
-
-4. PR 作成
-   └─ Claude に「PR 作って」と依頼
-
-5. PR レビュー
-   └─ /review-pr {PR番号}
+```mermaid
+flowchart LR
+    A["/plan-feature 要件"] --> B[計画書レビュー・合意]
+    B --> C["/implement-feature 計画書パス"]
+    C --> D["/review"]
+    D --> E["/create-pr"]
+    E --> F["/review-pr PR番号"]
 ```
 
----
+1. `/plan-feature {要件}` — 計画書が `docs/plans/` に保存される
+2. 計画書を確認し、必要なら対話で修正
+3. `/implement-feature {計画書パス}` — テスト込みで実装（pint・テスト・カバレッジ100%がゲート）
+4. `/review` → `/create-pr` で PR 作成 → `/review-pr {PR番号}`
 
-### DDD を用いた機能開発
-
-```
-1. ドメインモデル設計
-   └─ /ddd-model {機能名・要件}
-      ↓
-      ユビキタス言語・集約・値オブジェクト・ドメインイベントを設計
-
-2. 設計レビュー
-   └─ Claude と対話して設計を確認・修正
-
-3. コード実装
-   └─ /ddd-implement {集約名}
-      ↓
-      Entity / ValueObject / UseCase / Repository / Infrastructure を生成
-
-4. 品質チェック
-   ├─ /lint --fix
-   └─ /test
-
-5. コードレビュー
-   └─ /review
-
-6. PR 作成・レビュー
-   ├─ Claude に「PR 作って」と依頼
-   └─ /review-pr {PR番号}
-```
-
-**具体例:**
+### 既存機能の調査
 
 ```
-# ステップ1: 銘柄管理機能のドメイン設計
-/ddd-model ユーザーが銘柄をポートフォリオに追加・削除・一覧表示できる機能
-
-# ステップ2: 設計を確認して合意
-
-# ステップ3: Stock 集約を実装
-/ddd-implement Stock集約
-
-# ステップ4: 品質チェック
-/lint --fix
-/test
-
-# ステップ5: レビュー
-/review
+/investigate {機能名・画面名}
+→ docs/investigations/ にシーケンス図・クラス図・ER図付きレポートが保存される
 ```
 
----
-
-### PRレビュー
+### リファクタリング
 
 ```
-# PR のコードレビューを依頼
-/review-pr 42
-
-# レビュー結果に基づき修正後、再レビュー
-/review
+/refactor {ファイル・ディレクトリ・機能名}
+→ テストのグリーン確認 →（カバレッジ不足なら先にテスト追加）→ 小さく変更 → テスト・カバレッジで完了確認
 ```
 
----
+### DDD 設計だけ先に行う場合
+
+```
+/ddd-model {要件} → 設計合意 → /ddd-implement {集約名} → /review
+```
+
+## 品質ゲート（全ワークフロー共通）
+
+コード変更を伴う作業は以下がすべてパスして完了となる（CI でも強制）。
+
+```bash
+docker compose exec app ./vendor/bin/pint --test
+docker compose exec app php artisan test
+docker compose exec app php artisan test --coverage --min=100
+```
 
 ## ファイル構成
 
 ```
 .
-├── CLAUDE.md                        # プロジェクト情報（Claude が自動読み込み）
+├── CLAUDE.md                        # プロジェクト概要（Claude が自動読み込み）
 ├── docs/
-│   └── claude-workflow.md           # このドキュメント
+│   ├── architecture.md              # アーキテクチャ・実装規約・テスト方針（唯一の正）
+│   ├── claude-workflow.md           # このドキュメント
+│   ├── plans/                       # /plan-feature の計画書
+│   └── investigations/              # /investigate の調査レポート
 └── .claude/
+    ├── settings.json                # 共有permission設定
     ├── agents/
-    │   ├── reviewer.md              # コードレビューエージェント
-    │   ├── ddd-modeler.md           # DDDモデリングエージェント
-    │   └── ddd-implementer.md       # DDD実装エージェント
+    │   ├── code-explorer.md
+    │   ├── ddd-modeler.md
+    │   ├── ddd-implementer.md
+    │   ├── test-writer.md
+    │   └── reviewer.md
     └── commands/
-        ├── review.md                # /review
-        ├── review-pr.md             # /review-pr
-        ├── test.md                  # /test
-        ├── lint.md                  # /lint
-        ├── ddd-model.md             # /ddd-model
-        └── ddd-implement.md         # /ddd-implement
+        ├── plan-feature.md
+        ├── implement-feature.md
+        ├── investigate.md
+        ├── refactor.md
+        ├── ddd-model.md
+        ├── ddd-implement.md
+        ├── review.md
+        ├── review-pr.md
+        ├── create-pr.md
+        ├── test.md
+        └── lint.md
 ```

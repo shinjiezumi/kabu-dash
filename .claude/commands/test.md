@@ -1,5 +1,5 @@
 ---
-description: PHPUnitテストを実行する。引数でフィルタ指定可能。例: /test UserTest
+description: PHPUnitテストを実行する。引数でフィルタ指定、--coverage でカバレッジ計測。例: /test UserTest、/test --coverage
 allowed-tools:
   - Bash
 ---
@@ -8,7 +8,12 @@ PHPUnit テストを実行します。
 
 ## 実行コマンド
 
-引数が指定されている場合（特定テストのみ実行）:
+`$ARGUMENTS` に `--coverage` が含まれる場合（カバレッジ計測、100%未満で FAIL）:
+```bash
+docker compose exec app php artisan test --coverage --min=100
+```
+
+それ以外で引数が指定されている場合（特定テストのみ実行）:
 ```bash
 docker compose exec app php artisan test --filter=$ARGUMENTS
 ```
@@ -18,6 +23,7 @@ docker compose exec app php artisan test --filter=$ARGUMENTS
 docker compose exec app php artisan test
 ```
 
-作業ディレクトリ: `/Users/shinjiezumi/work/web/php/kabu-dash`
+## 結果の報告
 
-テスト結果を表示し、失敗があれば原因と修正案を提示してください。
+- 失敗があれば原因と修正案を提示する
+- カバレッジ計測時に 100% 未満の場合、100% に満たないファイルを列挙し、不足しているテストケースを提案する

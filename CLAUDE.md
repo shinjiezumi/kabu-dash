@@ -12,52 +12,19 @@
 | Web サーバー | Nginx |
 | コンテナ | Docker Compose |
 
-## ディレクトリ構成
+## アーキテクチャ・実装規約
 
-```
-.
-├── compose.yml              # 基本構成（本番はこのファイルのみ使用）
-├── compose.override.yml     # ローカル専用の上書き（自動適用）
-├── .env.example             # インフラ用環境変数の雛形（ルート.envはgitignore）
-├── docker/                  # コンテナイメージのビルド定義
-│   ├── nginx/               # Nginx設定（default.conf.template）
-│   ├── php/                 # PHP-FPM Dockerfile (appサービス)
-│   └── postgresql/          # PostgreSQL Dockerfile（データはnamed volume）
-├── data/                    # ランタイムデータ（gitignore: SSL証明書等）
-└── src/                     # Laravelアプリケーション
-    ├── app/
-    │   ├── Domain/          # ドメイン層（DDDコア）
-    │   │   └── {Context}/
-    │   │       ├── Entity/
-    │   │       ├── ValueObject/
-    │   │       ├── Aggregate/
-    │   │       ├── Repository/   # インターフェース
-    │   │       ├── Service/
-    │   │       └── Event/
-    │   ├── Application/     # アプリケーション層
-    │   │   └── {Context}/
-    │   │       └── UseCase/
-    │   ├── Infrastructure/  # インフラ層
-    │   │   └── {Context}/
-    │   │       └── Persistence/
-    │   ├── Http/Controllers/
-    │   ├── Models/          # Eloquentモデル（インフラ層で使用）
-    │   └── Providers/
-    ├── config/
-    ├── database/
-    │   ├── factories/
-    │   ├── migrations/
-    │   └── seeders/
-    ├── resources/
-    │   ├── css/
-    │   ├── js/
-    │   └── views/
-    ├── routes/
-    └── tests/
-        ├── Feature/
-        └── Unit/
-            └── Domain/      # ドメインオブジェクトのユニットテスト
-```
+このプロジェクトは DDD（ドメイン駆動設計）を採用している。
+**ディレクトリ構成・レイヤー責務・DDD ルール・コード規約・テスト方針は @docs/architecture.md が唯一の正。**
+実装・テスト・レビューの前に必ず参照すること。
+
+要点（詳細は architecture.md）:
+
+- Domain 層に Laravel / Eloquent を持ち込まない
+- 集約をまたぐ参照は ID のみ
+- リポジトリは Domain 層でインターフェース定義、Infrastructure 層で実装し `AppServiceProvider` でバインド
+- `declare(strict_types=1)` / `final` / `readonly` を基本とする
+- **テストカバレッジ 100% 必須**（CI で強制）
 
 ## よく使うコマンド
 
@@ -88,23 +55,25 @@ docker compose exec app php artisan tinker                       # REPL
 ```bash
 docker compose exec app php artisan test                         # テスト実行
 docker compose exec app php artisan test --filter=FooTest        # 特定テスト
+docker compose exec app php artisan test --coverage --min=100    # カバレッジ確認（100%未満でFAIL）
 docker compose exec app ./vendor/bin/pint                        # コーディング規約修正
 docker compose exec app ./vendor/bin/pint --test                 # 規約チェックのみ（修正なし）
 ```
 
-## コーディング規約
+## 実装タスクの完了条件
+
+コード変更を伴うタスクは、以下がすべてパスするまで完了と宣言しないこと。
+
+1. `docker compose exec app ./vendor/bin/pint --test`
+2. `docker compose exec app php artisan test`
+3. `docker compose exec app php artisan test --coverage --min=100`（機能追加・リファクタリング時）
+
+## コーディング規約（要約）
 
 - **スタイル**: Laravel Pint (PSR-12 ベース) — PRマージ前に必ずパスすること
 - **コミットメッセージ**: 日本語で記述（例: `ユーザー認証機能追加`）
 - **コメント**: 日本語推奨
 - **命名**: クラス・メソッドは英語 (Laravel 規約に従う)
-
-## テスト方針
-
-- フレームワーク: PHPUnit
-- DB: テスト時は SQLite in-memory（`phpunit.xml` で設定済み）
-- Feature テスト: HTTP リクエスト〜レスポンスを通したテスト
-- Unit テスト: 単一クラス・メソッドのテスト
 
 ## CI (GitHub Actions)
 
@@ -114,27 +83,11 @@ PR 作成・プッシュ時に自動実行:
 |--------|--------|------|
 | lint | Laravel Pint | コーディング規約チェック |
 | security | composer audit / npm audit | 依存パッケージの脆弱性スキャン |
-| test | PHPUnit | 自動テスト |
+| test | PHPUnit | 自動テスト + カバレッジ100%チェック |
 
-## アーキテクチャ方針（DDD）
+## ワークフロー・スキル・エージェント
 
-このプロジェクトは DDD（ドメイン駆動設計）を採用しています。
-
-### レイヤー責務
-
-| レイヤー | 場所 | 責務 |
-|---------|------|------|
-| Domain | `app/Domain/` | ビジネスロジックの核心。フレームワーク非依存 |
-| Application | `app/Application/` | ユースケース。Domain層を orchestrate する |
-| Infrastructure | `app/Infrastructure/` | DB・外部API等の技術的実装 |
-| Interface | `app/Http/` | HTTP リクエスト/レスポンスの処理 |
-
-### 基本ルール
-
-- Domain 層に Laravel / Eloquent を持ち込まない
-- 集約をまたぐ参照は ID のみで行う
-- リポジトリは Domain 層でインターフェース定義、Infrastructure 層で実装
-- `AppServiceProvider` でインターフェースと実装をバインドする
+開発ワークフロー（計画→実装→調査→リファクタリング→レビュー）と、利用可能なスラッシュコマンド・エージェントの一覧は @docs/claude-workflow.md を参照。
 
 ## 環境変数
 

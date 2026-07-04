@@ -9,6 +9,12 @@ services:
       - SSL_CERT_PATH=/etc/nginx/certs/cert.pem
       - SSL_CERT_KEY_PATH=/etc/nginx/certs/key.pem
 
+  app:
+    build:
+      context: ./docker/php
+      args:
+        INSTALL_PCOV: "true"
+
   postgresql:
     ports:
       - "5432:5432"

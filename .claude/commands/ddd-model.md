@@ -14,7 +14,8 @@ allowed-tools:
 
 ## 手順
 
-1. 既存コード（`src/app/`, `src/database/migrations/`, `src/routes/`）を読み、現在のドメイン状況を把握する
+1. `docs/architecture.md` を読み、アーキテクチャ規約を把握する
+2. 既存コード（`src/app/`, `src/database/migrations/`, `src/routes/`）を読み、現在のドメイン状況を把握する
 2. `ddd-modeler` エージェントを使って以下を設計する:
    - ユビキタス言語
    - 境界付けられたコンテキスト
