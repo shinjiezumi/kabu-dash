@@ -87,6 +87,7 @@ jobs:
           php-version: '8.3'
           extensions: sqlite3
           tools: composer
+          coverage: pcov
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
@@ -105,7 +106,7 @@ jobs:
         run: php artisan key:generate
 
       - name: Run tests
-        run: php artisan test
+        run: php artisan test --coverage --min=100
 
   deploy:
     name: Deploy to Production
@@ -124,9 +125,10 @@ jobs:
           script: |
             cd /var/www/kabu-dash
             git pull origin master
-            docker compose up -d --build
-            docker compose exec -T app composer install --no-dev --optimize-autoloader
-            docker compose exec -T app php artisan migrate --force
-            docker compose exec -T app php artisan config:cache
-            docker compose exec -T app php artisan route:cache
-            docker compose exec -T app php artisan view:cache
+            # -f compose.yml を明示し、ローカル用の compose.override.yml を無視する
+            docker compose -f compose.yml up -d --build
+            docker compose -f compose.yml exec -T app composer install --no-dev --optimize-autoloader
+            docker compose -f compose.yml exec -T app php artisan migrate --force
+            docker compose -f compose.yml exec -T app php artisan config:cache
+            docker compose -f compose.yml exec -T app php artisan route:cache
+            docker compose -f compose.yml exec -T app php artisan view:cache
