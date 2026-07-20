@@ -58,6 +58,19 @@ src/app/
 - 命名: クラス PascalCase / メソッド camelCase / DB 列 snake_case
 - コメントは日本語推奨
 
+## 個人情報（PII）の暗号化
+
+メールアドレス・氏名など個人を特定できる情報は DB に平文で保存しない。
+
+- **検索・一意性チェックが不要な列**（氏名など）: Eloquent の標準 `'encrypted'` キャストを使う
+- **検索・一意性チェックが必要な列**（メールアドレスなど）: `App\Casts\EncryptedWithHash` を使う
+  - 値は `Crypt::encryptString()` で暗号化して元の列に保存する
+  - 同時に決定的なハッシュ値（`hash_hmac('sha256', ..., APP_KEY)`）を `{列名}_hash` 列に保存する
+  - 検索・一意性制約は暗号化列ではなく `{列名}_hash` 列に対して行う（暗号化は非決定的で `WHERE email = ...` が使えないため）
+  - ルックアップは `EncryptedWithHash::hash()` で計算したハッシュを使う（例: `User::findByEmail()`）
+- マイグレーションで暗号化対象の列を追加する場合、暗号文が長くなるため列型は `text` を使う
+- 実装例: `App\Models\User`（`email` = `EncryptedWithHash`、`name` = `'encrypted'`）、`App\Casts\EncryptedWithHash`
+
 ## テスト方針
 
 ### 基本

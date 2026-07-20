@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Models;
 
+use App\Casts\EncryptedWithHash;
 use App\Models\User;
 use PHPUnit\Framework\TestCase;
 
@@ -15,5 +16,7 @@ class UserTest extends TestCase
 
         $this->assertSame('datetime', $casts['email_verified_at']);
         $this->assertSame('hashed', $casts['password']);
+        $this->assertSame('encrypted', $casts['name']);
+        $this->assertSame(EncryptedWithHash::class, $casts['email']);
     }
 }

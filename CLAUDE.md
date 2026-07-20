@@ -24,6 +24,7 @@
 - 集約をまたぐ参照は ID のみ
 - リポジトリは Domain 層でインターフェース定義、Infrastructure 層で実装し `AppServiceProvider` でバインド
 - `declare(strict_types=1)` / `final` / `readonly` を基本とする
+- 個人情報（メールアドレス・氏名など）は平文で保存しない。検索が必要な列は `App\Casts\EncryptedWithHash` でハッシュ列併用、不要な列は `'encrypted'` キャストを使う
 - **テストカバレッジ 100% 必須**（CI で強制）
 
 ## よく使うコマンド
