@@ -17,13 +17,9 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        // email は暗号化されているため where('email', ...) では既存行を検索できない。
-        // findByEmail() (email_hash 経由の検索) を使い、再実行してもエラーにならないようにする。
-        if (User::findByEmail('test@example.com') === null) {
-            User::factory()->create([
-                'name' => 'Test User',
-                'email' => 'test@example.com',
-            ]);
-        }
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
     }
 }
