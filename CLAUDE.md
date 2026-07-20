@@ -92,4 +92,3 @@ PR 作成・プッシュ時に自動実行:
 ## 環境変数
 
 `.env` は `src/` 直下に配置。`src/.env.example` を参考に作成。
-本番環境では `APP_DEBUG=false`、`APP_ENV=production` に設定すること。

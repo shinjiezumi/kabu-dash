@@ -11,7 +11,7 @@ RUN apk add --no-cache \
     zip \
     opcache
 
-# カバレッジ計測ドライバ（compose.override.yml でのみ有効化。本番ビルドには含めない）
+# カバレッジ計測ドライバ（compose.override.yml でのみ有効化）
 ARG INSTALL_PCOV=false
 RUN if [ "$INSTALL_PCOV" = "true" ]; then \
     apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
