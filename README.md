@@ -4,21 +4,18 @@
 
 ```
 .
-├── compose.yml            # 基本構成（本番はこのファイルのみ使用）
-├── compose.override.yml   # ローカル専用の上書き（docker compose up で自動適用）
+├── compose.yml            # Docker Compose構成
 ├── .env.example           # インフラ用環境変数の雛形（NGINX_SERVER_NAME, DB_*）
 ├── docker/                # コンテナイメージのビルド定義
 │   ├── nginx/             # Nginx
 │   ├── php/               # PHP-FPM
 │   └── postgresql/        # PostgreSQL
 ├── data/                  # ランタイムデータ（gitignore）
-│   ├── certs/             # ローカル用SSL証明書（mkcert）
-│   └── certbot/           # 本番用SSL証明書（Let's Encrypt）
+│   └── certs/             # ローカル用SSL証明書（mkcert）
 └── src/                   # Laravelアプリケーション
 ```
 
-- ローカル起動: `docker compose up -d`（compose.override.yml が自動でマージされる）
-- 本番起動: `docker compose -f compose.yml up -d`（override を無視する）
+- 起動: `docker compose up -d`
 - DBデータは named volume（`pgdata`）で管理され、リポジトリ内には置かない
 
 ## 起動手順
