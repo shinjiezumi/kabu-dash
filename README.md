@@ -39,13 +39,13 @@ mkcert -install
 # 証明書生成（data/ はgitignore済み）
 mkdir -p data/certs
 mkcert -cert-file data/certs/cert.pem -key-file data/certs/key.pem \
-  kabu-dash.local.shinjiezumi.com localhost 127.0.0.1
+  kabu-dash.com localhost 127.0.0.1
 ```
 
 /etc/hosts にドメインを追記する。
 
 ```bash
-echo "127.0.0.1 kabu-dash.local.shinjiezumi.com" | sudo tee -a /etc/hosts
+echo "127.0.0.1 kabu-dash.com" | sudo tee -a /etc/hosts
 ```
 
 #### 証明書の更新
@@ -58,7 +58,7 @@ openssl x509 -in data/certs/cert.pem -noout -dates
 
 # 再生成（生成コマンドと同じ。既存ファイルは上書きされる）
 mkcert -cert-file data/certs/cert.pem -key-file data/certs/key.pem \
-  kabu-dash.local.shinjiezumi.com localhost 127.0.0.1
+  kabu-dash.com localhost 127.0.0.1
 
 # 証明書はマウントされているため、nginxの再起動のみで反映される
 docker compose restart nginx
@@ -87,7 +87,7 @@ docker compose exec app php artisan key:generate
 docker compose exec app php artisan migrate
 ```
 
-アプリケーションは https://kabu-dash.local.shinjiezumi.com で起動します。
+アプリケーションは https://kabu-dash.com で起動します。
 （http アクセスは https へリダイレクトされます）
 
 ## よく使うコマンド

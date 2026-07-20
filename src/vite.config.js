@@ -17,7 +17,7 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
-        host: 'kabu-dash.local.shinjiezumi.com',
+        host: 'kabu-dash.com',
         ...(useHttps && {
             https: {
                 cert: fs.readFileSync(certPath),
