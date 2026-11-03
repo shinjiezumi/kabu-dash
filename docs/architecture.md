@@ -35,10 +35,19 @@ src/app/
 │   └── {BoundedContext}/
 │       └── Persistence/
 │           └── Eloquent{Entity}Repository.php
+├── Actions/Fortify/                 # Fortify の契約の実装（認証のみ。下記の適用除外を参照）
 ├── Http/Controllers/                # インターフェース層
 ├── Models/                          # Eloquent モデル（Infrastructure 層からのみ使用）
 └── Providers/                       # AppServiceProvider（DI バインド）
 ```
+
+## 適用除外: 認証
+
+認証は重要度が高いため、実績のある Laravel Fortify に任せ、DDD レイヤーを適用しない。
+
+- 自作コードは `app/Actions/Fortify/`、`app/Http/Responses/`、`FortifyServiceProvider` に閉じ込める
+- 認証機能では `App\Models\User` を Infrastructure 層以外から使用してよい
+- `declare(strict_types=1)`、`final`、テストカバレッジ 100% は認証機能にも適用する
 
 ## DDD 実装ルール
 
