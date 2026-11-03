@@ -1,5 +1,7 @@
 <?php
 
+use Laravel\Fortify\Features;
+
 return [
 
     /*
@@ -159,6 +161,8 @@ return [
     |
     */
 
-    'features' => [],
+    'features' => [
+        Features::registration(),
+    ],
 
 ];

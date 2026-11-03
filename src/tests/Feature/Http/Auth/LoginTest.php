@@ -113,4 +113,59 @@ final class LoginTest extends TestCase
         $this->post('/login', ['email' => 'other@example.com', 'password' => 'wrong-password'])
             ->assertSessionHasErrors('email');
     }
+
+    public function test_レート制限は別の接続元に影響しないこと(): void
+    {
+        $credentials = ['email' => 'user@example.com', 'password' => 'wrong-password'];
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->post('/login', $credentials);
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '192.0.2.1'])
+            ->post('/login', $credentials)
+            ->assertSessionHasErrors('email');
+    }
+
+    public function test_ヌル文字を付けてもレート制限を回避できないこと(): void
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $this->post('/login', ['email' => "user@example.com\0{$i}", 'password' => 'wrong-password'])
+                ->assertRedirect();
+        }
+
+        $this->post('/login', ['email' => "user@example.com\0last", 'password' => 'wrong-password'])
+            ->assertTooManyRequests();
+    }
+
+    public function test_不正なバイト列を付けてもレート制限を回避できないこと(): void
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $this->post('/login', ['email' => "user@example.com\xff{$i}", 'password' => 'wrong-password'])
+                ->assertRedirect();
+        }
+
+        $this->post('/login', ['email' => "user@example.com\xfflast", 'password' => 'wrong-password'])
+            ->assertTooManyRequests();
+    }
+
+    public function test_配列のメールアドレスを送った後もログイン画面を表示できること(): void
+    {
+        $response = $this->from('/login')
+            ->followingRedirects()
+            ->post('/login', ['email' => ['user@example.com'], 'password' => 'password']);
+
+        $response->assertOk();
+        $response->assertViewIs('auth.login');
+    }
+
+    public function test_入力エラー後はメールアドレスの入力値が画面に残ること(): void
+    {
+        $response = $this->from('/login')
+            ->followingRedirects()
+            ->post('/login', ['email' => 'user@example.com', 'password' => 'wrong-password']);
+
+        $response->assertOk();
+        $response->assertSee('value="user@example.com"', false);
+    }
 }
