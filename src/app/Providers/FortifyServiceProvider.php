@@ -54,6 +54,10 @@ final class FortifyServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by(Str::transliterate($email.'|'.$request->ip()));
         });
 
+        // 再送信を使い切っても確認リンクを開けるよう、ルートごとにカウントする
+        RateLimiter::for('verification', fn (Request $request): Limit => Limit::perMinute(6)
+            ->by($request->route()?->getName().'|'.$request->user()?->getAuthIdentifier()));
+
         RateLimiter::for('register', fn (Request $request): Limit => Limit::perMinute(5)->by($request->ip()));
         // 再設定リンクの送信とパスワード更新で共有する。更新側はトークンの総当たりを抑える
         RateLimiter::for('password-reset', fn (Request $request): Limit => Limit::perMinute(5)->by($request->ip()));

@@ -73,4 +73,18 @@ final class EmailVerificationNotificationTest extends TestCase
         $this->actingAs($user)->post('/email/verification-notification')->assertTooManyRequests();
         Notification::assertSentTimes(VerifyEmail::class, 6);
     }
+
+    public function test_再送信のレート制限はユーザーごとに数えること(): void
+    {
+        Notification::fake();
+        $user = User::factory()->unverified()->create();
+        $other = User::factory()->unverified()->create();
+
+        for ($i = 0; $i < 6; $i++) {
+            $this->actingAs($user)->post('/email/verification-notification');
+        }
+
+        $this->actingAs($other)->post('/email/verification-notification')->assertSessionHas('status');
+        Notification::assertSentToTimes($other, VerifyEmail::class, 1);
+    }
 }

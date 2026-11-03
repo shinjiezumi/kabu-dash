@@ -3,7 +3,7 @@
 @section('title', 'メールアドレスの確認')
 
 @section('content')
-    <p class="mb-4 text-sm">登録したメールアドレスに確認メールを送信しました。メール内のリンクを開いて、メールアドレスを確認してください。</p>
+    <p class="mb-4 text-sm">メールアドレスの確認が必要です。確認メール内のリンクを開いてください。メールが届いていない場合やリンクの期限が切れた場合は、再送信してください。</p>
 
     @if (session('status') === \Laravel\Fortify\Fortify::VERIFICATION_LINK_SENT)
         <p class="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">新しい確認メールを送信しました。</p>
