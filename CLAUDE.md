@@ -12,6 +12,11 @@
 
 `php` / `artisan` / `composer` / `pint` は `docker compose exec app` 経由で実行する。
 
+## コミット・PR 作成
+
+`git commit` / `git push` / `gh pr create` は、ユーザーが `/create-pr` を実行したときだけ行う。
+それ以外では、修正や実装を依頼された場合も実行せず、コマンドの提示に留める。
+
 ## 実装タスクの完了条件
 
 コード変更を伴うタスクは、以下がすべてパスするまで完了と宣言しないこと。
