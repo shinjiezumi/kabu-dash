@@ -35,6 +35,7 @@ final class FortifyServiceProvider extends ServiceProvider
         Fortify::requestPasswordResetLinkView(fn () => view('auth.forgot-password'));
         Fortify::resetPasswordView(fn (Request $request) => view('auth.reset-password', ['request' => $request]));
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
+        Fortify::verifyEmailView(fn () => view('auth.verify-email'));
 
         // 未登録のメールアドレスでも成功時と同じ応答にし、登録有無を判別できないようにする
         $this->app->singleton(FailedPasswordResetLinkRequestResponse::class, ConcealedPasswordResetLinkResponse::class);
@@ -52,6 +53,10 @@ final class FortifyServiceProvider extends ServiceProvider
 
             return Limit::perMinute(5)->by(Str::transliterate($email.'|'.$request->ip()));
         });
+
+        // 再送信を使い切っても確認リンクを開けるよう、ルートごとにカウントする
+        RateLimiter::for('verification', fn (Request $request): Limit => Limit::perMinute(6)
+            ->by($request->route()?->getName().'|'.$request->user()?->getAuthIdentifier()));
 
         RateLimiter::for('register', fn (Request $request): Limit => Limit::perMinute(5)->by($request->ip()));
         // 再設定リンクの送信とパスワード更新で共有する。更新側はトークンの総当たりを抑える
