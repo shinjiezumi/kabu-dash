@@ -87,6 +87,7 @@ docker compose exec app php artisan test --coverage --min=100
 ├── CLAUDE.md                        # プロジェクト概要（Claude が自動読み込み）
 ├── docs/
 │   ├── architecture.md              # アーキテクチャ・実装規約・テスト方針（唯一の正）
+│   ├── architecture-templates.md    # 実装テンプレート
 │   ├── claude-workflow.md           # このドキュメント
 │   ├── plans/                       # /plan-feature の計画書
 │   └── investigations/              # /investigate の調査レポート

@@ -1,5 +1,6 @@
 ---
 description: 現在のブランチから GitHub PR を作成する。未コミットの変更があれば品質ゲート確認後にコミットし、push して PR を作成する。引数で PR タイトルを指定可能。例: /create-pr ローカル環境のHTTPS化
+disable-model-invocation: true
 allowed-tools:
   - Bash
   - Read

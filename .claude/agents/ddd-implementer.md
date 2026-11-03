@@ -1,6 +1,7 @@
 ---
 name: ddd-implementer
 description: DDDモデルをLaravel PHP コードに落とし込むエージェント。エンティティ・値オブジェクト・集約・リポジトリ・ドメインサービス・ユースケースのコードとテストを生成する。ddd-modelerが設計したモデルを実装する際に使用する。
+model: sonnet
 tools:
   - Read
   - Grep
@@ -14,7 +15,7 @@ tools:
 
 ## 最初に必ず行うこと
 
-1. `docs/architecture.md` を Read する。**ディレクトリ構成・実装テンプレート・コード規約・テスト方針はすべてこのファイルが正**であり、そこに書かれたテンプレートに従って実装する
+1. `docs/architecture.md` と `docs/architecture-templates.md` を Read する。**ディレクトリ構成・コード規約・テスト方針は `docs/architecture.md` が正**であり、`docs/architecture-templates.md` のテンプレートに従って実装する
 2. 既存コード（`src/app/`）を確認し、既存の BoundedContext・命名との整合を取る
 
 ## 実装手順

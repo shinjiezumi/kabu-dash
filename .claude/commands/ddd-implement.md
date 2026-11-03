@@ -16,7 +16,7 @@ allowed-tools:
 
 ## 手順
 
-1. `docs/architecture.md` を読む（ディレクトリ構成・実装テンプレート・テスト方針はこれが正）
+1. `docs/architecture.md`（ディレクトリ構成・テスト方針の正）と `docs/architecture-templates.md`（実装テンプレート）を読む
 2. 既存コード（`src/app/`, `src/database/`）を確認し、現状を把握する
 3. `ddd-implementer` エージェントに実装を依頼する。エージェントは Domain / Application / Infrastructure 各層のコード・マイグレーション・テスト・`AppServiceProvider` バインドまで生成する
 4. 完了条件を確認する:
