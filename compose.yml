@@ -37,5 +37,12 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  # メール動作確認用。受信メールに再設定リンクなどが含まれるため、Web UI はホストのみに公開する
+  # SMTP（1025）はコンテナ間通信のみで使う
+  maildev:
+    image: maildev/maildev:2.2.1
+    ports:
+      - "127.0.0.1:8025:1080"
+
 volumes:
   pgdata:

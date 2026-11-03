@@ -3,6 +3,10 @@
 @section('title', 'ログイン')
 
 @section('content')
+    @if (session('status'))
+        <p class="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{{ session('status') }}</p>
+    @endif
+
     <form method="POST" action="{{ route('login.store') }}" class="space-y-4">
         @csrf
 
@@ -26,6 +30,10 @@
     </form>
 
     <p class="mt-4 text-center text-sm">
+        <a href="{{ route('password.request') }}" class="underline">パスワードをお忘れですか</a>
+    </p>
+
+    <p class="mt-2 text-center text-sm">
         <a href="{{ route('register') }}" class="underline">ユーザー登録はこちら</a>
     </p>
 @endsection

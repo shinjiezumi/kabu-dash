@@ -5,21 +5,39 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
+use App\Actions\Fortify\ResetUserPassword;
+use App\Http\Responses\ConcealedPasswordResetLinkResponse;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Laravel\Fortify\Contracts\FailedPasswordResetLinkRequestResponse;
 use Laravel\Fortify\Fortify;
 
 final class FortifyServiceProvider extends ServiceProvider
 {
+    /**
+     * Fortify が制限を設定しないルート名と、適用するレート制限の対応
+     */
+    private const THROTTLED_ROUTES = [
+        'register.store' => 'register',
+        'password.email' => 'password-reset',
+        'password.update' => 'password-reset',
+    ];
+
     public function boot(): void
     {
         Fortify::loginView(fn () => view('auth.login'));
         Fortify::registerView(fn () => view('auth.register'));
         Fortify::createUsersUsing(CreateNewUser::class);
+        Fortify::requestPasswordResetLinkView(fn () => view('auth.forgot-password'));
+        Fortify::resetPasswordView(fn (Request $request) => view('auth.reset-password', ['request' => $request]));
+        Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
+
+        // 未登録のメールアドレスでも成功時と同じ応答にし、登録有無を判別できないようにする
+        $this->app->singleton(FailedPasswordResetLinkRequestResponse::class, ConcealedPasswordResetLinkResponse::class);
 
         // レート制限はバリデーションより先に評価されるため、未入力や配列の入力でも落ちないようにする
         RateLimiter::for('login', function (Request $request): Limit {
@@ -36,13 +54,18 @@ final class FortifyServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('register', fn (Request $request): Limit => Limit::perMinute(5)->by($request->ip()));
+        // 再設定リンクの送信とパスワード更新で共有する。更新側はトークンの総当たりを抑える
+        RateLimiter::for('password-reset', fn (Request $request): Limit => Limit::perMinute(5)->by($request->ip()));
 
-        // Fortify には登録ルート用のレート制限設定がないため、ルートの読み込み後に追加する
+        // Fortify には登録・再設定ルート用のレート制限設定がないため、ルートの読み込み後に追加する
         // ルートキャッシュの利用時はこの時点でルートが未読み込みだが、キャッシュにミドルウェアが含まれるので null を許容する
         $this->app->booted(function (): void {
             $routes = Route::getRoutes();
             $routes->refreshNameLookups();
-            $routes->getByName('register.store')?->middleware('throttle:register');
+
+            foreach (self::THROTTLED_ROUTES as $routeName => $limiter) {
+                $routes->getByName($routeName)?->middleware('throttle:'.$limiter);
+            }
         });
     }
 }
