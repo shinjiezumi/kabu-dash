@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Actions\Fortify\CreateNewUser;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -16,6 +17,8 @@ final class FortifyServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Fortify::loginView(fn () => view('auth.login'));
+        Fortify::registerView(fn () => view('auth.register'));
+        Fortify::createUsersUsing(CreateNewUser::class);
 
         // レート制限はバリデーションより先に評価されるため、未入力や配列の入力でも落ちないようにする
         RateLimiter::for('login', function (Request $request): Limit {

@@ -24,4 +24,8 @@
 
         <button type="submit" class="w-full rounded bg-gray-900 px-4 py-2 font-medium text-white hover:bg-gray-700">ログイン</button>
     </form>
+
+    <p class="mt-4 text-center text-sm">
+        <a href="{{ route('register') }}" class="underline">ユーザー登録はこちら</a>
+    </p>
 @endsection
