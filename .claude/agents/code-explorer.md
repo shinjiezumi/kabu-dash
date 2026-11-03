@@ -1,6 +1,7 @@
 ---
 name: code-explorer
 description: 既存コードの調査専門エージェント（読み取り専用）。機能・画面・クラスの処理フロー、依存関係、関連テーブルを調査し、Mermaid図を含む定型レポートで返す。既存機能の調査、実装計画前の現状把握、影響範囲調査を行う際に使用する。
+model: sonnet
 tools:
   - Read
   - Grep

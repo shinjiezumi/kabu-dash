@@ -1,6 +1,7 @@
 ---
 name: test-writer
 description: PHPUnitテストを作成しカバレッジ100%を達成する専門エージェント。指定されたクラス・差分・未カバー箇所に対するUnit/Featureテストを生成する。テスト追加、カバレッジ改善、テスト漏れの解消を行う際に使用する。
+model: sonnet
 tools:
   - Read
   - Grep

@@ -1,5 +1,6 @@
 ---
 description: 実装計画に基づき機能を実装する（テスト込み・カバレッジ100%必須）。計画書パスか機能名を引数に渡す。例: /implement-feature docs/plans/2026-07-02-add-stock.md
+model: sonnet
 allowed-tools:
   - Read
   - Grep
@@ -17,7 +18,7 @@ allowed-tools:
 ## 手順
 
 1. 計画書（`$ARGUMENTS` がパスの場合はそのファイル、機能名の場合は `docs/plans/` から該当ファイル）を読む。計画書がない場合は先に `/plan-feature` の実行を提案して止まる
-2. `docs/architecture.md` を読み、実装テンプレート・テスト方針を把握する
+2. `docs/architecture.md` と `docs/architecture-templates.md` を読み、テスト方針・実装テンプレートを把握する
 3. 計画書の「実装順序」に従い、**レイヤーごとにテスト→実装→検証を刻んで進める**:
    - Domain 層（テストとセット）
    - Application 層（テストとセット）
