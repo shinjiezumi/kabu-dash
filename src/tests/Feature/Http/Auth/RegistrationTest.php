@@ -102,6 +102,62 @@ final class RegistrationTest extends TestCase
         $this->assertDatabaseCount('users', 0);
     }
 
+    public function test_同一接続元から5回を超えて登録を試行すると429になること(): void
+    {
+        $input = [...$this->validInput(), 'password_confirmation' => 'different-password'];
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->post('/register', $input)->assertSessionHasErrors('password');
+        }
+
+        $this->post('/register', $this->validInput())->assertTooManyRequests();
+
+        $this->assertGuest();
+        $this->assertDatabaseCount('users', 0);
+    }
+
+    public function test_登録のレート制限は別の接続元に影響しないこと(): void
+    {
+        $input = [...$this->validInput(), 'password_confirmation' => 'different-password'];
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->post('/register', $input);
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '192.0.2.1'])
+            ->post('/register', $input)
+            ->assertSessionHasErrors('password');
+    }
+
+    public function test_登録画面の表示はレート制限の対象外であること(): void
+    {
+        for ($i = 0; $i < 6; $i++) {
+            $this->get('/register')->assertOk();
+        }
+    }
+
+    public function test_配列の名前を送った後も登録画面を表示できること(): void
+    {
+        $response = $this->from('/register')
+            ->followingRedirects()
+            ->post('/register', [...$this->validInput(), 'name' => ['山田太郎']]);
+
+        $response->assertOk();
+        $response->assertViewIs('auth.register');
+        $this->assertDatabaseCount('users', 0);
+    }
+
+    public function test_入力エラー後は名前とメールアドレスの入力値が画面に残ること(): void
+    {
+        $response = $this->from('/register')
+            ->followingRedirects()
+            ->post('/register', [...$this->validInput(), 'password_confirmation' => 'different-password']);
+
+        $response->assertOk();
+        $response->assertSee('value="山田太郎"', false);
+        $response->assertSee('value="user@example.com"', false);
+    }
+
     /**
      * @return array<string, string>
      */

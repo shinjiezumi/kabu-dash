@@ -8,7 +8,7 @@
 
         <div>
             <label for="name" class="mb-1 block text-sm font-medium">名前</label>
-            <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" class="w-full rounded border border-gray-300 px-3 py-2">
+            <input id="name" type="text" name="name" value="{{ is_string(old('name')) ? old('name') : '' }}" required autofocus autocomplete="name" class="w-full rounded border border-gray-300 px-3 py-2">
             @error('name')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
@@ -16,7 +16,7 @@
 
         <div>
             <label for="email" class="mb-1 block text-sm font-medium">メールアドレス</label>
-            <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username" class="w-full rounded border border-gray-300 px-3 py-2">
+            <input id="email" type="email" name="email" value="{{ is_string(old('email')) ? old('email') : '' }}" required autocomplete="username" class="w-full rounded border border-gray-300 px-3 py-2">
             @error('email')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
